@@ -1,6 +1,8 @@
 # Universal Controller
 The Universal Controller allows you to put your application in its initial state on the server. In combination with your chosen view layer you can now render the application on the server and show it near instantly in the context of the current user. When the client side application loads it will piggyback on the existing DOM and effectively rehydrate the minimal state from the server to make it up to date, meaning that the pure HTML responded from your server and the loading of the actual application is transparent.
 
+Read more about server side rendering in the [Cerebral in depth - SSR](https://www.jsblog.io/articles/christianalfoni/cerebral_in_depth_ssr) article.
+
 **Note** that when using JSX syntax it is wise to also transpile your server side code, which this example shows.
 
 ```js
@@ -18,7 +20,7 @@ const controller = UniversalController({
 ```
 
 ## Methods
-### run
+### runSequence
 If you need to update the state of the controller you can run a signal execution for doing so:
 
 ```js
@@ -31,7 +33,7 @@ const controller = UniversalController({
   }
 })
 
-controller.run([
+controller.runSequence([
   function myAction ({state, props}) {
     state.set('app.isAwesome', props.isAwesome)
   }
@@ -43,9 +45,49 @@ controller.run([
   })
 ```
 
-You can add any providers to the controller to do database fetching etc. inside this **run** execution. Think of it as a signal the updates the state of the app before rendering it on the server.
+You can run a predefined signal, which is defined inside a controller module as well:
+```js
+const controller = new UniversalController({
+  modules: {
+    app: {
+      ...,
+      signals: {
+        aSignal: [
+          function myAction ({state, props}) {
+            state.set('app.isAwesome', props.isAwesome)
+          }
+        ],
+      },
+    },
+  },
+})
+
+controller
+  .runSequence('app.aSignal', {isAwesome: true})
+  .then(() => {
+    // I am done running
+  })
+```
+
+You can add any providers to the controller to do database fetching etc. inside this **runSequence** execution. Think of it as a signal the updates the state of the app before rendering it on the server.
 
 **NOTE!** You should instantiate the controller for each run you want to do.
+
+### setState
+Finally, you can (synchronously) set a value inside the state directly, using a path:
+
+```js
+import {UniversalController} from 'cerebral'
+import appModule from '../client/modules/app'
+
+const controller = UniversalController({
+  modules: {
+    app: appModule
+  }
+})
+
+controller.setState('app.foo', 123)
+```
 
 ### getScript
 When the client side application loads it will do its first render with the default state, meaning that if the server updated the state this is now out of sync. Using the **getScript** method you will get a script tag you can inject into the *HEAD* of the returned HTML. Cerebral will use this to bring your client side application state up to date with the server.

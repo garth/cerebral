@@ -4,34 +4,39 @@ node_js: '6'
 cache:
   directories:
   - node_modules
+git:
+  depth: 9999
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - libstdc++-4.9-dev
 notifications:
   email: false
 env:
   - TEST_MODE=serial
 script:
-  - npm prune
-  - npm run lint
-  - npm test
+- |
+  if [[ $SKIP_TESTS != 'true' ]]; then
+    npm prune
+    npm run lint
+    npm test
+  fi
 after_success:
 - |
-  git remote add auth https://cerebraljs:${GH_TOKEN}@github.com/cerebral/cerebral;
-  git config --global user.email "cerebraljs@gmail.com";
-  git config --global user.name "Cerebral JS";
+  if [[ $TRAVIS_SECURE_ENV_VARS == 'true' ]]; then
+    git remote set-url origin https://cerebraljs:${GH_TOKEN}@github.com/cerebral/cerebral;
+    git config --global user.email "cerebraljs@gmail.com";
+    git config --global user.name "Cerebral JS";
+  fi
   if [[ $TRAVIS_BRANCH == 'master' || $TRAVIS_PULL_REQUEST == 'true' ]]; then
     npm run coverage;
     npm run coverage:upload;
   fi
-  if [[ $TRAVIS_BRANCH == 'master' && $TRAVIS_PULL_REQUEST == 'false' ]]; then
-    # TODO: parse commit message for instructions to skip tagging and publishing
-    # git tag next -f;
-    # git push auth --tags -f &>/dev/null;
-  fi
-  if [[ $TRAVIS_BRANCH == 'next' && $TRAVIS_PULL_REQUEST == 'false' ]]; then
-    # TODO: check changed path to decide if npm publish necessary
-    # echo //registry.npmjs.org/:_authToken=${NPM_TOKEN} > ~/.npmrc;
-    # TODO: implement publish script @gaspard
-    # lerna publish -c --npm-tag next --yes --exact;
-    # npm run deploy && echo 'Website updated.';
+  if [[ $TRAVIS_BRANCH == 'master' || $TRAVIS_BRANCH == 'next' ]] && [[ $TRAVIS_PULL_REQUEST == 'false' ]]; then
+    printf "//registry.npmjs.org/:_authToken=$NPM_TOKEN\n" > ~/.npmrc
+    npm run release -- --publish
   fi
 branches:
   except:
