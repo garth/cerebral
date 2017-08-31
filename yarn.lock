@@ -7490,9 +7490,9 @@ replaceall@^0.1.3:
   version "0.1.6"
   resolved "https://registry.yarnpkg.com/replaceall/-/replaceall-0.1.6.tgz#81d81ac7aeb72d7f5c4942adf2697a3220688d8e"
 
-repo-cooker@^1.0.3:
-  version "1.0.3"
-  resolved "https://registry.yarnpkg.com/repo-cooker/-/repo-cooker-1.0.3.tgz#62a79ac9a1655b1e436e0fc8da53c3d1c06e92ea"
+repo-cooker@latest:
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/repo-cooker/-/repo-cooker-2.0.2.tgz#0a47894b416c65e567bd63eb6b9e90201001a4ea"
   dependencies:
     function-tree "^1.0.0-beta.3"
     globby "^6.1.0"
